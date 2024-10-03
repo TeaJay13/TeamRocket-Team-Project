@@ -6,6 +6,6 @@ The goal of this project is to create a game using the pygame module in python. 
 1. [Controls](#controls)
 
 
-##controls
+## Controls
 
 * `SPACE` - Jump
