@@ -1,3 +1,5 @@
+# Start_home.py
+
 import pygame
 import sys
 
@@ -40,9 +42,10 @@ def draw_button(msg, x, y, w, h, inactive_color, active_color, action=None):
     
     render_text(msg, font_small, WHITE, (x + 20, y + 10))
 
-# Start game function (dummy for now)
+# Start game function (this will set the game state to active)
 def start_game():
-    print("Game Started!")
+    global game_active
+    game_active = True
 
 # Quit game function
 def quit_game():
@@ -51,26 +54,22 @@ def quit_game():
 
 # Main loop for start page
 def start_page():
-    running = True
-    while running:
+    global game_active
+    game_active = False  # Reset game state to not active
+    
+    while not game_active:
         screen.fill(WHITE)
         
+        # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit_game()
+
         # Title
         render_text("Welcome to the Game", font_large, BLACK, (150, 100))
-        
+
         # Draw buttons
         draw_button("Start", 300, 250, 200, 50, GREEN, BRIGHT_GREEN, start_game)
         draw_button("Quit", 300, 350, 200, 50, RED, BRIGHT_RED, quit_game)
         
-        # Event handling
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        
         pygame.display.update()
-
-# Run the start page
-start_page()
-
-# Quit pygame when done
-pygame.quit()
