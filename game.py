@@ -4,16 +4,20 @@ import Start_home
 
 pygame.init()
 
-screen_width = 800
-screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
+window_size = (800, 600)
+screen = pygame.display.set_mode(window_size)
+
+player_texture = pygame.image.load("TeamRocket-Team-Project/textures/pngegg.png")
+player_texture_size = player_texture.get_size()
 
 WHITE = (255, 255, 255)
 
+
+
 player_x = 100
 player_y = 150
-player_width = 20
-player_height = 20
+player_width = player_texture_size[0]
+player_height = player_texture_size[1]
 player_gravity = 0
 is_jumping = False  # To track if the rectangle is in a jump
 
@@ -32,20 +36,20 @@ def game_loop():
         keys = pygame.key.get_pressed()
 
         # Create the rectangles
-        player = pygame.Rect(player_x, player_y, player_width, player_height)
+        player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
         platform = pygame.Rect(200, 450, 500, 5)
 
-        # Move the rectangle
+        # Move the texture
         if keys[pygame.K_LEFT]:
             player_x -= 5
-            player.x = player_x
-            if player.colliderect(platform):
+            player_rect.x = player_x
+            if player_rect.colliderect(platform):
                 player_x += 5
 
         if keys[pygame.K_RIGHT]:
             player_x += 5
-            player.x = player_x
-            if player.colliderect(platform):
+            player_rect.x = player_x
+            if player_rect.colliderect(platform):
                 player_x -= 5
 
         if keys[pygame.K_SPACE] and not is_jumping:  # Jump only when not already jumping
@@ -54,25 +58,25 @@ def game_loop():
 
         player_gravity += 1  # Simulate gravity (increases over time)
         player_y += player_gravity
-        player.y = player_y
+        player_rect.y = player_y
 
         # Check for collisions with platform (coming from above)
-        if player.colliderect(platform) and player_gravity > 0:
-            player_y = platform.y - player_height  # Position the rectangle on top of the platform
+        if player_rect.colliderect(platform) and player_gravity > 0:
+            player_y = platform.y - player_height  # Position the texture on top of the platform
             player_gravity = 0  # Stop gravity
             is_jumping = False  # Allow jumping again
 
-        # Prevent the rectangle from falling off the bottom of the screen
-        if player_y >= screen_height - player_height:
-            player_y = screen_height - player_height
+        # Prevent the texture from falling off the bottom of the screen
+        if player_y >= window_size[1] - player_height:
+            player_y = window_size[1] - player_height
             player_gravity = 0
             is_jumping = False
 
-        # Fill the screen and draw the rectangles
+        # Fill the screen and draw the texture and platform
         screen.fill((0, 0, 0))
-        pygame.draw.rect(screen, WHITE, player)
+        screen.blit(player_texture, (player_x, player_y))  # Draw the texture instead of the rectangle
         pygame.draw.rect(screen, WHITE, platform)
-        
+
         # Update the display
         pygame.display.flip()
 
