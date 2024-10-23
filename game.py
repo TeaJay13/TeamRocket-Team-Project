@@ -7,6 +7,7 @@ pygame.init()
 window_size = (800, 600)
 screen = pygame.display.set_mode(window_size)
 
+background_img = pygame.image.load("TeamRocket-Team-Project/Textures/swamp.PNG")
 player_texture = pygame.image.load("TeamRocket-Team-Project/textures/pngegg.png")
 player_texture_size = player_texture.get_size()
 
@@ -73,7 +74,9 @@ def game_loop():
             is_jumping = False
 
         # Fill the screen and draw the texture and platform
-        screen.fill((0, 0, 0))
+        screen.blit(background_img,(0,0))
+
+        
         screen.blit(player_texture, (player_x, player_y))  # Draw the texture instead of the rectangle
         pygame.draw.rect(screen, WHITE, platform)
 
