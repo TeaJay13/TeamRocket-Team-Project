@@ -9,6 +9,8 @@ screen_height = 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GRAY = (128, 128, 128)
 
 player_x = 100
 player_y = 150
@@ -19,15 +21,43 @@ is_jumping = False  # To track if the rectangle is in a jump
 
 clock = pygame.time.Clock()
 
+# Confirmation box function
+def confirmation_screen():
+    font = pygame.font.Font(None, 36)
+    message = font.render("Are you sure you want to go back to home? (Y/N)", True, WHITE)
+    rect = message.get_rect(center=(screen_width // 2, screen_height // 2))
+
+    while True:
+        screen.fill(BLACK)
+        screen.blit(message, rect)
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_y:  # If "Y" is pressed, go back to home
+                    Start_home.start_page()  # Call the start page function
+                    if Start_home.game_active:
+                        game_loop()
+                elif event.key == pygame.K_n:  # If "N" is pressed, return to game
+                    return
+
 # Main game loop
 def game_loop():
     global player_x, player_y, player_gravity, is_jumping
-    
+
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+            # Escape key event to trigger confirmation screen
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    confirmation_screen()
 
         keys = pygame.key.get_pressed()
 
@@ -69,10 +99,10 @@ def game_loop():
             is_jumping = False
 
         # Fill the screen and draw the rectangles
-        screen.fill((0, 0, 0))
+        screen.fill(BLACK)
         pygame.draw.rect(screen, WHITE, player)
         pygame.draw.rect(screen, WHITE, platform)
-        
+
         # Update the display
         pygame.display.flip()
 
