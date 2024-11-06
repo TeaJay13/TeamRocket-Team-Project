@@ -8,6 +8,8 @@ screen_width = 800
 screen_height = 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 
+background = pygame.image.load("textures/bacground.png")
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (128, 128, 128)
@@ -98,8 +100,10 @@ def game_loop():
             player_gravity = 0
             is_jumping = False
 
-        # Fill the screen and draw the rectangles
-        screen.fill(BLACK)
+        # Draw the background image
+        screen.blit(background, (0, 0))  # Position background at the top-left corner
+
+        # Draw the player and platform
         pygame.draw.rect(screen, WHITE, player)
         pygame.draw.rect(screen, WHITE, platform)
 
