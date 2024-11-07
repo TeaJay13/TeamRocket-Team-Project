@@ -1,7 +1,7 @@
 import pygame
 import sys
-import Start_home  # Import start page
-import game  # Import main game
+# import Start_home  # Import start page
+# import game  # Import main game
 
 # Initialize Pygame
 pygame.init()
@@ -41,10 +41,12 @@ def draw_button(msg, x, y, w, h, inactive_color, active_color, action=None):
 
 # Actions for buttons
 def play_again():
-    game.game_loop()  # Restart the main game loop
+    print("Play Again clicked")  # Placeholder action for testing
+    # game.game_loop()  # Restart the main game loop
 
 def go_to_start_menu():
-    Start_home.start_page()  # Go back to start page
+    print("Go to Start Menu clicked")  # Placeholder action for testing
+    # Start_home.start_page()  # Go back to start page
 
 # Main loop for end screen
 def end_screen():
@@ -65,3 +67,7 @@ def end_screen():
         draw_button("Go to Start Menu", 225, 400, 350, 50, RED, BRIGHT_RED, go_to_start_menu)
 
         pygame.display.flip()
+
+# Run end screen if this file is executed directly
+if __name__ == "__main__":
+    end_screen()
