@@ -1,91 +1,67 @@
 import pygame
 import sys
+import Start_home  # Import start page
+import game  # Import main game
 
 # Initialize Pygame
 pygame.init()
 
-# Set up display
-WIDTH, HEIGHT = 750, 400
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Ending Screen")
-
-# Define colors
+# Constants for screen size and colors
+WIDTH, HEIGHT = 800, 600
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
+GREEN = (0, 200, 0)
+BRIGHT_GREEN = (0, 255, 0)
+RED = (200, 0, 0)
+BRIGHT_RED = (255, 0, 0)
 
-# Define fonts
-font = pygame.font.SysFont(None, 48)
+# Set up display
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Game Over")
 
-# Button class
-class Button:
-    def __init__(self, text, x, y, width, height, color, hover_color, action=None):
-        self.text = text
-        self.rect = pygame.Rect(x, y, width, height)
-        self.color = color
-        self.hover_color = hover_color
-        self.action = action
-        self.clicked = False  # Prevents multiple clicks being registered
+# Fonts
+font_large = pygame.font.SysFont(None, 75)
+font_small = pygame.font.SysFont(None, 50)
 
-    def draw(self, screen):
-        mouse_pos = pygame.mouse.get_pos()
-        click = pygame.mouse.get_pressed()
+# Button function
+def draw_button(msg, x, y, w, h, inactive_color, active_color, action=None):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
 
-        # Draw hover effect
-        if self.rect.collidepoint(mouse_pos):
-            pygame.draw.rect(screen, self.hover_color, self.rect)
-            if click[0] == 1 and not self.clicked and self.action:
-                self.action()
-                self.clicked = True  # Lock click to avoid multiple triggers
-        else:
-            pygame.draw.rect(screen, self.color, self.rect)
+    if x + w > mouse[0] > x and y + h > mouse[1] > y:
+        pygame.draw.rect(screen, active_color, (x, y, w, h))
+        if click[0] == 1 and action is not None:
+            action()
+    else:
+        pygame.draw.rect(screen, inactive_color, (x, y, w, h))
+    
+    text_surface = font_small.render(msg, True, WHITE)
+    screen.blit(text_surface, (x + (w - text_surface.get_width()) // 2, y + (h - text_surface.get_height()) // 2))
 
-        if not click[0]:
-            self.clicked = False  # Reset click state
-
-        # Render text
-        text_surface = font.render(self.text, True, BLACK)
-        screen.blit(text_surface, (self.rect.x + (self.rect.width - text_surface.get_width()) // 2,
-                                  self.rect.y + (self.rect.height - text_surface.get_height()) // 2))
-
-# Define button actions
+# Actions for buttons
 def play_again():
-    print("Play Again")  # Replace this with logic to restart the game
+    game.game_loop()  # Restart the main game loop
 
 def go_to_start_menu():
-    print("Go to Start Menu")  # Replace this with logic to return to the start menu
+    Start_home.start_page()  # Go back to start page
 
-# Create buttons and center them horizontally
-button_width = 350
-button_height = 50
-button_spacing = 70  # Space between buttons
+# Main loop for end screen
+def end_screen():
+    while True:
+        screen.fill(WHITE)
 
-buttons = [
-    Button("Play Again", (WIDTH - button_width) // 2, 150, button_width, button_height, BLUE, GREEN, play_again),
-    Button("Go to Start Menu", (WIDTH - button_width) // 2, 150 + button_spacing, button_width, button_height, BLUE, GREEN, go_to_start_menu),
-]
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-# Main game loop
-running = True
-while running:
-    screen.fill(WHITE)
+        # Display "Game Over" message
+        text_surface = font_large.render("Game Over", True, BLACK)
+        screen.blit(text_surface, ((WIDTH - text_surface.get_width()) // 2, 100))
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+        # Draw buttons
+        draw_button("Play Again", 225, 300, 350, 50, GREEN, BRIGHT_GREEN, play_again)
+        draw_button("Go to Start Menu", 225, 400, 350, 50, RED, BRIGHT_RED, go_to_start_menu)
 
-    # Display a message at the top (optional)
-    text_surface = font.render("Game Over", True, BLACK)
-    screen.blit(text_surface, ((WIDTH - text_surface.get_width()) // 2, 50))
-
-    # Draw buttons
-    for button in buttons:
-        button.draw(screen)
-
-    # Update the display
-    pygame.display.flip()
-
-# Quit Pygame
-pygame.quit()
-sys.exit()
+        pygame.display.flip()
