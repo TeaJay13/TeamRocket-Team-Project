@@ -8,8 +8,8 @@ screen_width = 800
 screen_height = 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 
-background = pygame.image.load("graphics/bacground.png")
-platform_texture = pygame.image.load("graphics/platform00.png")
+background = pygame.image.load("textures/bacground.png")
+platform_texture = pygame.image.load("textures/platform00.png")
 
 WHITE = (255, 255, 255)
 
