@@ -1,8 +1,7 @@
 import pygame
 import sys
 import Start_home
-
-WHITE = (255, 255, 255)
+from tilemap import Tilemap
 
 class Game:
     def __init__(self):
@@ -24,6 +23,9 @@ class Game:
 
         # Scroll offset for the camera
         self.scroll = [0, 0]
+        
+        # Tilemap instance
+        self.tilemap = Tilemap(self.scroll, self.display)
 
         # Player properties
         self.player_x = 400
@@ -33,20 +35,11 @@ class Game:
         self.player_gravity = 0
         self.is_jumping = False
 
-        # Define platforms
-        self.platforms = [
-            Platform(200, 450, 500, 10),
-            Platform(200, 300, 500, 10),
-        ]
-
-        # Ground platform for collision
-        self.ground = Platform(0, 555, 1000, 10)  # Ground positioned at y=550
-
-        # Load platform texture
-        self.platform_texture = pygame.image.load("graphics/platform00.png")
+        # Define the ground (as a Rect object)
+        self.ground = pygame.Rect(0, 555, 1000, 10)  # Ground positioned at y=550
 
     def game_loop(self):
-        background = pygame.image.load("graphics/bacground.PNG")
+        background = pygame.image.load("graphics/background.png")
 
         running = True
         while running:
@@ -92,16 +85,34 @@ class Game:
             self.player_y += self.player_gravity
             player.y = self.player_y
 
-            # Platform collision
-            for platform in self.platforms:
-                if player.colliderect(platform.get_rect()) and self.player_gravity > 0:
-                    self.player_y = platform.y - self.player_height
+            # Check for collision with grass platforms in Tilemap
+            for platform in self.tilemap.grass_platforms:
+                if player.colliderect(platform) and self.player_gravity > 0:
+                    self.player_y = platform.top - self.player_height
                     self.player_gravity = 0
                     self.is_jumping = False
 
+            # Platform collision (check for white platforms specifically)
+            for platform in self.tilemap.white_platforms:  # Access the white platforms from the tilemap
+                if player.colliderect(platform):
+                    if self.player_gravity > 0:
+                        self.player_y = platform.top - self.player_height  # Stop falling by setting player position to platform top
+                        self.player_gravity = 0  # Reset gravity so player doesn't keep falling
+                        self.is_jumping = False  # The player has landed on the platform, so they're not jumping anymore
+                    else:
+                        self.player_y = platform.bottom
+                        self.player_gravity = 0
+
+
+            if self.player_x < 0:
+                self.player_x = 0
+            if self.player_x > 980:
+                self.player_x = 980
+
+
             # Ground collision (for player landing)
-            if player.colliderect(self.ground.get_rect()) and self.player_gravity > 0:
-                self.player_y = self.ground.y - self.player_height
+            if player.colliderect(self.ground) and self.player_gravity > 0:
+                self.player_y = self.ground.top - self.player_height
                 self.player_gravity = 0
                 self.is_jumping = False
 
@@ -114,47 +125,25 @@ class Game:
             # Draw everything with scroll offsets on the display surface
             self.display.fill((0, 0, 0))
 
-            # Draw ground (drawn here behind the player but still used for collision)
-            pygame.draw.rect(self.display, WHITE, self.ground.get_rect().move(-render_scroll[0], -render_scroll[1]))
-
             # Draw background first (so it's behind everything else)
-            self.display.blit(background, (-render_scroll[0], -render_scroll[1]))  # Scroll background
+            self.display.blit(background, (-render_scroll[0], -render_scroll[1]))
 
-            # Draw player and platforms with scroll offset
-            pygame.draw.rect(self.display, WHITE, player.move(-render_scroll[0], -render_scroll[1]))
+            # Draw player with scroll offset
+            pygame.draw.rect(self.display, (255,255,255), player.move(-render_scroll[0], -render_scroll[1]))
 
-            # Blit platforms using the texture (instead of drawing a rectangle)
-            # Blit platforms using the texture and scale it to match the platform width
-            for platform in self.platforms:
-                # Get the platform rectangle
-                platform_rect = platform.get_rect().move(-render_scroll[0], -render_scroll[1])
-                
-                # Scale the texture to match the width and height of the platform
-                scaled_platform = pygame.transform.scale(self.platform_texture, (platform_rect.width, platform_rect.height))
-                
-                # Blit the scaled texture onto the display at the platform's position
-                self.display.blit(scaled_platform, platform_rect)
-
+            # Use the tilemap's render function to draw the platforms
+            self.tilemap.render()
 
             # Scale and blit the display surface to the main screen
             self.screen.blit(pygame.transform.scale(self.display, (self.screen_width, self.screen_height)), (0, 0))
 
-            # Update the display
-            pygame.display.flip()
+            pygame.display.flip()  # Update the display
             self.clock.tick(60)
 
         pygame.quit()
         sys.exit()
 
-class Platform:
-    def __init__(self, x, y, length, height):
-        self.x = x
-        self.y = y
-        self.length = length
-        self.height = height
 
-    def get_rect(self):
-        return pygame.Rect(self.x, self.y, self.length, self.height)
 
 # Run the start page and then the game
 Start_home.start_page()
