@@ -34,7 +34,7 @@ def add_enemy_score(points=1):
 
     # TODO: Connect with game logic to add points when an enemy is killed
     # Example:
-    # Call `add_enemy_score()` in your game whenever an enemy is defeated
+    # Call `add_enemy_score()` in the game whenever an enemy is defeated
     # score_system.add_enemy_score(points)
 
 # Function to update time score based on elapsed time
@@ -50,7 +50,7 @@ def update_time_score():
 
     # TODO: Call this function regularly in the main game loop to keep the time score updated
     # Example:
-    # In your main game loop, call `update_time_score()` to accumulate survival points
+    # In the main game loop, call `update_time_score()` to accumulate survival points
 
 # Function to calculate and save total score to the database
 def save_score():
@@ -65,7 +65,7 @@ def save_score():
 
     # TODO: Trigger `save_score()` when the game ends, before returning to the main menu or end screen
     # Example:
-    # If using an end screen module, call `score_system.save_score()` in that module
+    # In the game over logic, call `score_system.save_score()` to save the final score
 
 # Function to reset scores (for a new game)
 def reset_scores():
@@ -77,7 +77,7 @@ def reset_scores():
 
     # TODO: Call `reset_scores()` at the start of a new game to reset all scores
     # Example:
-    # In your start menu or game start logic, call `score_system.reset_scores()` to reset scores
+    # In the start menu or game start logic, call `score_system.reset_scores()` to reset scores
 
 # Function to load and display the scoreboard
 def display_scoreboard():
