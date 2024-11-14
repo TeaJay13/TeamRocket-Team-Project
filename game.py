@@ -1,109 +1,151 @@
 import pygame
 import sys
 import Start_home
+from tilemap import Tilemap
 
-pygame.init()
+class Game:
+    def __init__(self):
+        pygame.init()
 
-screen_width = 800
-screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
+        pygame.display.set_caption('Block Game')
+        self.screen_width = 1000
+        self.screen_height = 700
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
 
-background = pygame.image.load("textures/bacground.png")
-platform_texture = pygame.image.load("textures/platform00.png")
+        # Smaller display surface to act as the viewport
+        self.display = pygame.Surface((1000, 500))  # The size of the "camera" viewport
 
-WHITE = (255, 255, 255)
+        self.clock = pygame.time.Clock()
 
-player_x = 100
-player_y = 150
-player_width = 20
-player_height = 20
-player_gravity = 0
-is_jumping = False  # To track if the player is in a jump
+        # World and player properties
+        self.world_width = 1000
+        self.world_height = 700
 
-clock = pygame.time.Clock()
-
-# Invisible platform dimensions (for character to walk on at land level)
-land_platform_y = screen_height - 45  # Position 45 pixels from the bottom
-land = pygame.Rect(0, land_platform_y, screen_width, 5)
-
-platform_x = 450
-platform_y = 430
-platform_width = platform_texture.get_width()
-platform_height = platform_texture.get_height()
-
-# Main game loop
-def game_loop():
-    global player_x, player_y, player_gravity, is_jumping
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        keys = pygame.key.get_pressed()
-
-        # Create the player rectangle
-        player = pygame.Rect(player_x, player_y, player_width, player_height)
+        # Scroll offset for the camera
+        self.scroll = [0, 0]
         
-        # Define platform rectangle for collision
-        platform = pygame.Rect(platform_x, platform_y, platform_width, platform_height)
+        # Tilemap instance
+        self.tilemap = Tilemap(self.scroll, self.display)
 
-        # Move the player
-        if keys[pygame.K_a]:
-            player_x -= 5
-            player.x = player_x
-            if player.colliderect(land):
-                player_x += 5
+        # Player properties
+        self.player_x = 400
+        self.player_y = 150
+        self.player_width = 20
+        self.player_height = 20
+        self.player_gravity = 0
+        self.is_jumping = False
 
-        if keys[pygame.K_d]:
-            player_x += 5
-            player.x = player_x
-            if player.colliderect(land):
-                player_x -= 5
+        # Define the ground (as a Rect object)
+        self.ground = pygame.Rect(0, 555, 1000, 10)  # Ground positioned at y=550
 
-        # Jump logic
-        if keys[pygame.K_SPACE] and not is_jumping:  # Jump only when not already jumping
-            player_gravity = -20  # Negative gravity for upward jump
-            is_jumping = True
+    def game_loop(self):
+        background = pygame.image.load("graphics/background.png")
 
-        player_gravity += 1  # Simulate gravity (increases over time)
-        player_y += player_gravity
-        player.y = player_y
+        running = True
+        while running:
+            # Calculate the scroll offset to center player
+            center_x = self.display.get_width() / 2
+            center_y = self.display.get_height() / 2
 
-        # Check for collision with land (invisible ground platform)
-        if player.colliderect(land) and player_gravity > 0:
-            player_y = land.y - player_height  # Align player's bottom to land's top
-            player_gravity = 0  # Stop gravity
-            is_jumping = False  # Allow jumping again
+            self.scroll[0] += (self.player_x - center_x - self.scroll[0]) / 10
+            self.scroll[1] += (self.player_y - center_y - self.scroll[1]) / 10
 
-        # Check for collision with platform
-        if player.colliderect(platform) and player_gravity > 0:
-            player_y = platform.y - player_height # Align player's bottom to platform's top
-            player_gravity = 0  # Stop gravity
-            is_jumping = False  # Allow jumping again
+            # Constrain scroll to the world boundaries
+            self.scroll[0] = max(0, min(self.scroll[0], self.world_width - self.display.get_width()))
+            self.scroll[1] = max(0, min(self.scroll[1], self.world_height - self.display.get_height()))
 
-        # Prevent the player from falling off the bottom of the screen
-        if player_y >= screen_height - player_height:
-            player_y = screen_height - player_height
-            player_gravity = 0
-            is_jumping = False
+            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
 
-        # Draw background, player, and platform
-        screen.blit(background, (0, 0))  # Position background at the top-left corner
-        pygame.draw.rect(screen, WHITE, player)
-        screen.blit(platform_texture, (platform_x, platform_y))
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
-        # Update the display
-        pygame.display.flip()
+            keys = pygame.key.get_pressed()
 
-        # Limit the frame rate
-        clock.tick(60)
+            # Define player rectangle
+            player = pygame.Rect(self.player_x, self.player_y, self.player_width, self.player_height)
 
-    pygame.quit()
-    sys.exit()
+            # Player movement
+            if keys[pygame.K_a]:
+                self.player_x -= 5
+                player.x = self.player_x
+
+            if keys[pygame.K_d]:
+                self.player_x += 5
+                player.x = self.player_x
+
+            # Jumping logic
+            if keys[pygame.K_SPACE] and not self.is_jumping:
+                self.player_gravity = -20
+                self.is_jumping = True
+
+            # Gravity effect
+            self.player_gravity += 1
+            self.player_y += self.player_gravity
+            player.y = self.player_y
+
+            # Check for collision with grass platforms in Tilemap
+            for platform in self.tilemap.grass_platforms:
+                if player.colliderect(platform) and self.player_gravity > 0:
+                    self.player_y = platform.top - self.player_height
+                    self.player_gravity = 0
+                    self.is_jumping = False
+
+            # Platform collision (check for white platforms specifically)
+            for platform in self.tilemap.white_platforms:  # Access the white platforms from the tilemap
+                if player.colliderect(platform):
+                    if self.player_gravity > 0:
+                        self.player_y = platform.top - self.player_height  # Stop falling by setting player position to platform top
+                        self.player_gravity = 0  # Reset gravity so player doesn't keep falling
+                        self.is_jumping = False  # The player has landed on the platform, so they're not jumping anymore
+                    else:
+                        self.player_y = platform.bottom
+                        self.player_gravity = 0
+
+
+            if self.player_x < 0:
+                self.player_x = 0
+            if self.player_x > 980:
+                self.player_x = 980
+
+
+            # Ground collision (for player landing)
+            if player.colliderect(self.ground) and self.player_gravity > 0:
+                self.player_y = self.ground.top - self.player_height
+                self.player_gravity = 0
+                self.is_jumping = False
+
+            # Prevent player from falling off the screen
+            if self.player_y >= self.world_height - self.player_height:
+                self.player_y = self.world_height - self.player_height
+                self.player_gravity = 0
+                self.is_jumping = False
+
+            # Draw everything with scroll offsets on the display surface
+            self.display.fill((0, 0, 0))
+
+            # Draw background first (so it's behind everything else)
+            self.display.blit(background, (-render_scroll[0], -render_scroll[1]))
+
+            # Draw player with scroll offset
+            pygame.draw.rect(self.display, (255,255,255), player.move(-render_scroll[0], -render_scroll[1]))
+
+            # Use the tilemap's render function to draw the platforms
+            self.tilemap.render()
+
+            # Scale and blit the display surface to the main screen
+            self.screen.blit(pygame.transform.scale(self.display, (self.screen_width, self.screen_height)), (0, 0))
+
+            pygame.display.flip()  # Update the display
+            self.clock.tick(60)
+
+        pygame.quit()
+        sys.exit()
+
+
 
 # Run the start page and then the game
 Start_home.start_page()
 if Start_home.game_active:
-    game_loop()
+    Game().game_loop()
