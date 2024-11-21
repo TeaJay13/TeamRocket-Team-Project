@@ -39,7 +39,18 @@ class Game:
         self.ground = pygame.Rect(0, 555, 1000, 10)  # Ground positioned at y=550
 
     def game_loop(self):
-        background = pygame.image.load("graphics/background.png")
+        # Load initial background
+        global background_state, game_active, background_chosen
+        background_forest = pygame.image.load("graphics/background.png")
+        background_swamp = pygame.image.load("graphics/background2.png")
+
+        if Start_home.background_state == 0:
+            background = background_forest
+        if Start_home.background_state == 1:
+            background = background_swamp
+
+
+
 
         running = True
         while running:
