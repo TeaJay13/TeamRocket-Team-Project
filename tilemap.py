@@ -9,13 +9,17 @@ class Tilemap:
 
         # Define the platforms
         self.white_platforms = [
-            pygame.Rect(200, 450, 500, 10),
-            pygame.Rect(200, 300, 500, 10),
+            pygame.Rect(300, 340, 400, 10),
+            pygame.Rect(300, 436, 400, 120),
+            pygame.Rect(400, 250, 200, 10)
         ]
         self.grass_platforms = [
             pygame.Rect(100, 500, 100, 20),
+            pygame.Rect(100, 400, 100, 20),
+            pygame.Rect(100, 300, 100, 20),
             pygame.Rect(800, 500, 100, 20),
-            pygame.Rect(800, 300, 100, 20)
+            pygame.Rect(800, 300, 100, 20),
+            pygame.Rect(800, 400, 100, 20)
         ]
 
     def render(self):
