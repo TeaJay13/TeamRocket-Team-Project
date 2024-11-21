@@ -88,11 +88,11 @@ class Game:
 
             # Jumping logic
             if keys[pygame.K_SPACE] and not self.is_jumping:
-                self.player_gravity = -20
+                self.player_gravity = -9
                 self.is_jumping = True
 
             # Gravity effect
-            self.player_gravity += 1
+            self.player_gravity += 0.4
             self.player_y += self.player_gravity
             player.y = self.player_y
 
