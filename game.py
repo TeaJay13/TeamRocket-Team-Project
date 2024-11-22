@@ -39,7 +39,18 @@ class Game:
         self.ground = pygame.Rect(0, 555, 1000, 10)  # Ground positioned at y=550
 
     def game_loop(self):
-        background = pygame.image.load("graphics/background.png")
+        # Load initial background
+        global background_state, game_active, background_chosen
+        background_forest = pygame.image.load("graphics/background.png")
+        background_swamp = pygame.image.load("graphics/background2.png")
+
+        if Start_home.background_state == 0:
+            background = background_forest
+        if Start_home.background_state == 1:
+            background = background_swamp
+
+
+
 
         running = True
         while running:
@@ -77,11 +88,11 @@ class Game:
 
             # Jumping logic
             if keys[pygame.K_SPACE] and not self.is_jumping:
-                self.player_gravity = -20
+                self.player_gravity = -9
                 self.is_jumping = True
 
             # Gravity effect
-            self.player_gravity += 1
+            self.player_gravity += 0.4
             self.player_y += self.player_gravity
             player.y = self.player_y
 
