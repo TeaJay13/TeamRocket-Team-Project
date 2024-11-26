@@ -42,7 +42,18 @@ class Game:
         self.bullets = []  # Bullets list
 
     def game_loop(self):
-        background = pygame.image.load("graphics/background.png")
+        # Load initial background
+        global background_state, game_active, background_chosen
+        background_forest = pygame.image.load("graphics/background.png")
+        background_swamp = pygame.image.load("graphics/background2.png")
+
+        if Start_home.background_state == 0:
+            background = background_forest
+        if Start_home.background_state == 1:
+            background = background_swamp
+
+
+
 
         running = True
         while running:
