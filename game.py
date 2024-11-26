@@ -2,6 +2,8 @@ import pygame
 import sys
 import Start_home
 import math
+import scoring
+import database
 from tilemap import Tilemap
 
 class Game:
@@ -12,6 +14,9 @@ class Game:
         self.screen_width = 1000
         self.screen_height = 700
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+
+        # Font initialization
+        self.font = pygame.font.Font(None, 36)  # Default Pygame font, size 36
 
         # Smaller display surface to act as the viewport
         self.display = pygame.Surface((1000, 500))  # The size of the "camera" viewport
@@ -42,6 +47,10 @@ class Game:
         self.bullets = []  # Bullets list
 
     def game_loop(self):
+        # Start the timer and initialize the database**
+        scoring.start_timer()
+        database.initialize_db()
+
         # Load initial background
         global background_state, game_active, background_chosen
         background_forest = pygame.image.load("graphics/background.png")
@@ -164,6 +173,11 @@ class Game:
             self.screen.blit(
                 pygame.transform.scale(self.display, (self.screen_width, self.screen_height)), (0, 0)
             )
+
+            # Update and display score and timer
+            scoring.update_timer()
+            scoring.display_timer_and_score(self.screen, self.font)
+
 
             pygame.display.flip()  # Update the display
             self.clock.tick(60)
