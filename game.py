@@ -1,6 +1,7 @@
 import pygame
 import sys
 import Start_home
+import math
 from tilemap import Tilemap
 
 class Game:
@@ -23,7 +24,7 @@ class Game:
 
         # Scroll offset for the camera
         self.scroll = [0, 0]
-        
+
         # Tilemap instance
         self.tilemap = Tilemap(self.scroll, self.display)
 
@@ -37,6 +38,8 @@ class Game:
 
         # Define the ground (as a Rect object)
         self.ground = pygame.Rect(0, 555, 1000, 10)  # Ground positioned at y=550
+
+        self.bullets = []  # Bullets list
 
     def game_loop(self):
         background = pygame.image.load("graphics/background.png")
@@ -60,6 +63,26 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:  # Left mouse button
+                        mouse_x, mouse_y = pygame.mouse.get_pos()
+                        bullet_speed = 14
+
+                        # Adjust mouse position to account for scaling and scrolling
+                        adjusted_mouse_x = mouse_x / (self.screen_width / self.display.get_width()) + render_scroll[0]
+                        adjusted_mouse_y = mouse_y / (self.screen_height / self.display.get_height()) + render_scroll[1]
+
+                        # Calculate the direction of the bullet
+                        angle = math.atan2(
+                            adjusted_mouse_y - self.player_y,
+                            adjusted_mouse_x - self.player_x
+                        )
+                        dx = math.cos(angle) * bullet_speed
+                        dy = math.sin(angle) * bullet_speed
+
+                        # Add the bullet to self.bullets
+                        self.bullets.append([self.player_x, self.player_y, dx, dy])
+
 
             keys = pygame.key.get_pressed()
 
@@ -69,11 +92,9 @@ class Game:
             # Player movement
             if keys[pygame.K_a]:
                 self.player_x -= 5
-                player.x = self.player_x
 
             if keys[pygame.K_d]:
                 self.player_x += 5
-                player.x = self.player_x
 
             # Jumping logic
             if keys[pygame.K_SPACE] and not self.is_jumping:
@@ -83,34 +104,15 @@ class Game:
             # Gravity effect
             self.player_gravity += 0.4
             self.player_y += self.player_gravity
-            player.y = self.player_y
 
-            # Check for collision with grass platforms in Tilemap
-            for platform in self.tilemap.grass_platforms:
+            # Platform collision (grass and white platforms)
+            for platform in self.tilemap.grass_platforms + self.tilemap.white_platforms:
                 if player.colliderect(platform) and self.player_gravity > 0:
                     self.player_y = platform.top - self.player_height
                     self.player_gravity = 0
                     self.is_jumping = False
 
-            # Platform collision (check for white platforms specifically)
-            for platform in self.tilemap.white_platforms:  # Access the white platforms from the tilemap
-                if player.colliderect(platform):
-                    if self.player_gravity > 0:
-                        self.player_y = platform.top - self.player_height  # Stop falling by setting player position to platform top
-                        self.player_gravity = 0  # Reset gravity so player doesn't keep falling
-                        self.is_jumping = False  # The player has landed on the platform, so they're not jumping anymore
-                    else:
-                        self.player_y = platform.bottom
-                        self.player_gravity = 0
-
-
-            if self.player_x < 0:
-                self.player_x = 0
-            if self.player_x > 980:
-                self.player_x = 980
-
-
-            # Ground collision (for player landing)
+            # Ground collision
             if player.colliderect(self.ground) and self.player_gravity > 0:
                 self.player_y = self.ground.top - self.player_height
                 self.player_gravity = 0
@@ -122,27 +124,41 @@ class Game:
                 self.player_gravity = 0
                 self.is_jumping = False
 
-            # Draw everything with scroll offsets on the display surface
+            # Draw everything
             self.display.fill((0, 0, 0))
-
-            # Draw background first (so it's behind everything else)
             self.display.blit(background, (-render_scroll[0], -render_scroll[1]))
 
             # Draw player with scroll offset
-            pygame.draw.rect(self.display, (255,255,255), player.move(-render_scroll[0], -render_scroll[1]))
+            pygame.draw.rect(
+                self.display, (255, 255, 255),
+                player.move(-render_scroll[0], -render_scroll[1])
+            )
 
-            # Use the tilemap's render function to draw the platforms
+            # Draw bullets and update their positions
+            for bullet in self.bullets[:]:
+                bullet[0] += bullet[2]
+                bullet[1] += bullet[3]
+                if bullet[0] < 0 or bullet[0] > self.world_width or bullet[1] < 0 or bullet[1] > self.world_height:
+                    self.bullets.remove(bullet)
+                else:
+                    pygame.draw.circle(
+                        self.display, (255, 255, 255),
+                        (int(bullet[0] - render_scroll[0]), int(bullet[1] - render_scroll[1])), 5
+                    )
+
+            # Render platforms
             self.tilemap.render()
 
             # Scale and blit the display surface to the main screen
-            self.screen.blit(pygame.transform.scale(self.display, (self.screen_width, self.screen_height)), (0, 0))
+            self.screen.blit(
+                pygame.transform.scale(self.display, (self.screen_width, self.screen_height)), (0, 0)
+            )
 
             pygame.display.flip()  # Update the display
             self.clock.tick(60)
 
         pygame.quit()
         sys.exit()
-
 
 
 # Run the start page and then the game
