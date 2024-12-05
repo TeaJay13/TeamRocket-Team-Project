@@ -44,7 +44,50 @@ class Game:
         # Define the ground (as a Rect object)
         self.ground = pygame.Rect(0, 555, 1000, 10)  # Ground positioned at y=550
 
+        self.sprite_sheet_idle = pygame.image.load("graphics/player_char_idle.png").convert_alpha()
+        self.sprite_sheet_moving = pygame.image.load("graphics/player_char_moving.png").convert_alpha()
+
+        # Загружаем кадры для бездействия (спрайтшит для бездействия)
+        self.idle_frames = self.load_frames(self.sprite_sheet_idle, 0, 4, 64, 85)  # 4 кадра для бездействия (верхний ряд)
+        # Загружаем кадры для движения (спрайтшит для движения)
+        self.walk_frames = self.load_frames(self.sprite_sheet_moving, 0, 6, 64, 85)  # 6 кадров для бега (верхний ряд)
+
+
+        self.current_frames = self.idle_frames
+        self.current_frame_index = 0
+        self.animation_timer = 0
+
         self.bullets = []  # Bullets list
+
+    def load_frames(self, sprite_sheet, start_index, count, width, height):
+        frames = []
+        for i in range(start_index, start_index + count):
+            x = i * width  # Горизонтальная позиция кадра
+            y = 0  # Так как все кадры находятся в одной строке, вертикальная позиция всегда 0
+
+            # Проверяем, не выходит ли кадр за пределы изображения
+            if x + width > sprite_sheet.get_width() or y + height > sprite_sheet.get_height():
+                raise ValueError(f"Frame {i} out of bounds: x={x}, y={y}, width={width}, height={height}, "
+                                 f"sheet_width={sprite_sheet.get_width()}, sheet_height={sprite_sheet.get_height()}")
+        
+            frame = sprite_sheet.subsurface(pygame.Rect(x, y, width, height))
+            frames.append(frame)
+    
+        return frames
+
+
+    def update_animation(self, keys):
+        if keys[pygame.K_a] or keys[pygame.K_d]:
+            self.current_frames = self.walk_frames
+        else:
+            self.current_frames = self.idle_frames
+
+        self.animation_timer += 1
+        if self.animation_timer >= 10:  # Меняем кадр каждые 10 кадров
+            self.animation_timer = 0
+            self.current_frame_index = (self.current_frame_index + 1) % len(self.current_frames)
+
+        
 
     def game_loop(self):
         # Start the timer and initialize the database**
@@ -53,13 +96,16 @@ class Game:
 
         # Load initial background
         global background_state, game_active, background_chosen
-        background_forest = pygame.image.load("graphics/background.png")
-        background_swamp = pygame.image.load("graphics/background2.png")
+        background_forest = pygame.image.load("graphics/BG1.svg") #draw a bottom on those and rename them
+        background_swamp = pygame.image.load("graphics/BG2.svg")
+
+        background1_scaled = pygame.transform.scale(background_forest, (self.screen_width, self.screen_height))
+        background2_scaled = pygame.transform.scale(background_swamp, (self.screen_width, self.screen_height))
 
         if Start_home.background_state == 0:
-            background = background_forest
+            background = background1_scaled
         if Start_home.background_state == 1:
-            background = background_swamp
+            background = background2_scaled
 
 
 
@@ -70,7 +116,7 @@ class Game:
             center_x = self.display.get_width() / 2
             center_y = self.display.get_height() / 2
 
-            self.scroll[0] += (self.player_x - center_x - self.scroll[0]) / 10
+            self.scroll[0] += (self.player_x - center_x - self.scroll[0])  / 10
             self.scroll[1] += (self.player_y - center_y - self.scroll[1]) / 10
 
             # Constrain scroll to the world boundaries
@@ -106,9 +152,6 @@ class Game:
 
             keys = pygame.key.get_pressed()
 
-            # Define player rectangle
-            player = pygame.Rect(self.player_x, self.player_y, self.player_width, self.player_height)
-
             # Player movement
             if keys[pygame.K_a]:
                 self.player_x -= 5
@@ -124,6 +167,9 @@ class Game:
             # Gravity effect
             self.player_gravity += 0.4
             self.player_y += self.player_gravity
+
+            # Define player rectangle
+            player = pygame.Rect(self.player_x, self.player_y, self.player_width, self.player_height)
 
             # Platform collision (grass and white platforms)
             for platform in self.tilemap.grass_platforms + self.tilemap.white_platforms:
@@ -144,15 +190,24 @@ class Game:
                 self.player_gravity = 0
                 self.is_jumping = False
 
+            self.update_animation(keys)
+
             # Draw everything
             self.display.fill((0, 0, 0))
             self.display.blit(background, (-render_scroll[0], -render_scroll[1]))
 
-            # Draw player with scroll offset
-            pygame.draw.rect(
-                self.display, (255, 255, 255),
-                player.move(-render_scroll[0], -render_scroll[1])
-            )
+            if self.current_frame_index < 0 or self.current_frame_index >= len(self.current_frames):
+                raise IndexError(f"Invalid frame index: {self.current_frame_index}. Available frames: {len(self.current_frames)}")
+            else:
+                 current_frame = self.current_frames[self.current_frame_index]
+            self.display.blit(current_frame, (self.player_x - render_scroll[0], self.player_y - render_scroll[1]))
+
+
+            # # Draw player with scroll offset
+            # pygame.draw.rect(
+            #     self.display, (255, 255, 255),
+            #     player.move(-render_scroll[0], -render_scroll[1])
+            # )
 
             # Draw bullets and update their positions
             for bullet in self.bullets[:]:
@@ -169,7 +224,6 @@ class Game:
             # Render platforms
             self.tilemap.render()
 
-            # Scale and blit the display surface to the main screen
             self.screen.blit(
                 pygame.transform.scale(self.display, (self.screen_width, self.screen_height)), (0, 0)
             )
