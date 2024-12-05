@@ -37,7 +37,7 @@ Here is a list of the libraries used in python:
 
 # Collaborators
 
-* Nick Ball - Team Leader, Project Manager
+* David Larsen - Team Leader, Project Manager
 * Connor Babb - Documentation Manager
 * Andrew Olson - Quality Assurance
 * Egor Smirnov - Graphic Designer
