@@ -6,6 +6,13 @@ import scoring
 import database
 from tilemap import Tilemap
 
+class Square:
+    def __init__(self, x, y, speed):
+        self.x = x
+        self.y = y
+        self.speed = speed
+        self.hit_count = 2  # Set hit count for squares to 2
+
 class Game:
     def __init__(self):
         pygame.init()
@@ -34,24 +41,21 @@ class Game:
         self.tilemap = Tilemap(self.scroll, self.display)
 
         # Player properties
-        self.player_x = 400
+        self.player_x = 425
         self.player_y = 150
-        self.player_width = 20
-        self.player_height = 20
+        self.player_width = 40
+        self.player_height = 76
         self.player_gravity = 0
         self.is_jumping = False
 
         # Define the ground (as a Rect object)
-        self.ground = pygame.Rect(0, 555, 1000, 10)  # Ground positioned at y=550
+        self.ground = pygame.Rect(-100, 600, 1200, 10)  # Ground positioned at y=550
 
         self.sprite_sheet_idle = pygame.image.load("graphics/player_char_idle.png").convert_alpha()
         self.sprite_sheet_moving = pygame.image.load("graphics/player_char_moving.png").convert_alpha()
 
-        # Загружаем кадры для бездействия (спрайтшит для бездействия)
-        self.idle_frames = self.load_frames(self.sprite_sheet_idle, 0, 4, 64, 85)  # 4 кадра для бездействия (верхний ряд)
-        # Загружаем кадры для движения (спрайтшит для движения)
-        self.walk_frames = self.load_frames(self.sprite_sheet_moving, 0, 6, 64, 85)  # 6 кадров для бега (верхний ряд)
-
+        self.idle_frames = self.load_frames(self.sprite_sheet_idle, 0, 4, 64, 85)
+        self.walk_frames = self.load_frames(self.sprite_sheet_moving, 0, 6, 64, 85)
 
         self.current_frames = self.idle_frames
         self.current_frame_index = 0
@@ -77,15 +81,22 @@ class Game:
 
 
     def update_animation(self, keys):
+        # Determine the current frame set based on player movement
         if keys[pygame.K_a] or keys[pygame.K_d]:
-            self.current_frames = self.walk_frames
+            if self.current_frames != self.walk_frames:
+                self.current_frames = self.walk_frames
+                self.current_frame_index = 0  # Reset frame index
         else:
-            self.current_frames = self.idle_frames
+            if self.current_frames != self.idle_frames:
+                self.current_frames = self.idle_frames
+                self.current_frame_index = 0  # Reset frame index
 
+        # Increment the animation timer
         self.animation_timer += 1
-        if self.animation_timer >= 10:  # Меняем кадр каждые 10 кадров
+        if self.animation_timer >= 10:  # Change frame every 10 ticks
             self.animation_timer = 0
             self.current_frame_index = (self.current_frame_index + 1) % len(self.current_frames)
+
 
         
 
@@ -171,12 +182,32 @@ class Game:
             # Define player rectangle
             player = pygame.Rect(self.player_x, self.player_y, self.player_width, self.player_height)
 
+            # Constrain player position horizontally to stay within the bounds (0 to 1000 pixels)
+            if self.player_x < -20:
+                self.player_x = -20
+            elif self.player_x > 960:
+                self.player_x = 960
+
+
             # Platform collision (grass and white platforms)
-            for platform in self.tilemap.grass_platforms + self.tilemap.white_platforms:
+            for platform in self.tilemap.grass_platforms:
                 if player.colliderect(platform) and self.player_gravity > 0:
                     self.player_y = platform.top - self.player_height
                     self.player_gravity = 0
                     self.is_jumping = False
+
+            for platform in self.tilemap.white_platforms:
+                if player.colliderect(platform):
+                    # Check if the player is falling onto the platform
+                    if self.player_gravity > 0 and player.bottom - 10 <= platform.top + self.player_gravity:
+                        self.player_y = platform.top - self.player_height
+                        self.player_gravity = 0
+                        self.is_jumping = False
+                    # Check if the player is jumping up and hits the platform from below
+                    elif self.player_gravity < 0 and player.top >= platform.bottom - abs(self.player_gravity):
+                        self.player_y = platform.bottom
+                        self.player_gravity = 0
+
 
             # Ground collision
             if player.colliderect(self.ground) and self.player_gravity > 0:
@@ -217,7 +248,7 @@ class Game:
                     self.bullets.remove(bullet)
                 else:
                     pygame.draw.circle(
-                        self.display, (255, 255, 255),
+                        self.display, (255, 165, 20),
                         (int(bullet[0] - render_scroll[0]), int(bullet[1] - render_scroll[1])), 5
                     )
 

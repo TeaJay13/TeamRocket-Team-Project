@@ -15,18 +15,18 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
-# Square properties (centered)
-SQUARE_SIZE = 30
-square_x, square_y = WIDTH // 2, HEIGHT // 2
+# player properties (centered)
+player_SIZE = 30
+player_x, player_y = WIDTH // 2, HEIGHT // 2
 
-# Exclude stationary square's y-coordinate range
-square_y_range = (square_y - SQUARE_SIZE // 2, square_y + SQUARE_SIZE // 2)
+# Exclude stationary player's y-coordinate range
+player_y_range = (player_y - player_SIZE // 2, player_y + player_SIZE // 2)
 
 # Define the helper function to ensure valid y-coordinate for spawn
 def get_valid_y():
     while True:
         y = random.randint(0, HEIGHT)
-        if y < square_y_range[0] or y > square_y_range[1]:
+        if y < player_y_range[0] or y > player_y_range[1]:
             return y
 
 # Bullet properties
@@ -100,7 +100,7 @@ spawn_count = 1  # Start with 1 piece spawning at a time
 while running:
     clock.tick(30)  # Run the game at 30 FPS
     screen.fill(BLACK)
-    pygame.draw.rect(screen, WHITE, (square_x - SQUARE_SIZE // 2, square_y - SQUARE_SIZE // 2, SQUARE_SIZE, SQUARE_SIZE))
+    pygame.draw.rect(screen, WHITE, (player_x - player_SIZE // 2, player_y - player_SIZE // 2, player_SIZE, player_SIZE))
 
 
     # Event handling
@@ -110,10 +110,10 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:  # Shoot a bullet
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-                angle = math.atan2(mouse_y - square_y, mouse_x - square_x)
+                angle = math.atan2(mouse_y - player_y, mouse_x - player_x)
                 dx = math.cos(angle) * bullet_speed
                 dy = math.sin(angle) * bullet_speed
-                bullets.append([square_x, square_y, dx, dy])
+                bullets.append([player_x, player_y, dx, dy])
 
     # Update bullets
     for bullet in bullets[:]:
