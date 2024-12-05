@@ -119,8 +119,6 @@ class Game:
             background = background2_scaled
 
 
-
-
         running = True
         while running:
             # Calculate the scroll offset to center player
@@ -143,7 +141,7 @@ class Game:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:  # Left mouse button
                         mouse_x, mouse_y = pygame.mouse.get_pos()
-                        bullet_speed = 14
+                        bullet_speed = 18
 
                         # Adjust mouse position to account for scaling and scrolling
                         adjusted_mouse_x = mouse_x / (self.screen_width / self.display.get_width()) + render_scroll[0]
