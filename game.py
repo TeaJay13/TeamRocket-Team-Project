@@ -4,15 +4,9 @@ import Start_home
 import math
 import scoring
 import database
+from enemy_manager import EnemyManager
 from tilemap import Tilemap
-
-class Square:
-    def __init__(self, x, y, speed):
-        self.x = x
-        self.y = y
-        self.speed = speed
-        self.hit_count = 2  # Set hit count for squares to 2
-
+    
 class Game:
     def __init__(self):
         pygame.init()
@@ -40,10 +34,13 @@ class Game:
         # Tilemap instance
         self.tilemap = Tilemap(self.scroll, self.display)
 
+        # enemy manager instance
+        self.enemy_manager = EnemyManager(self.display)
+
         # Player properties
         self.player_x = 425
         self.player_y = 150
-        self.player_width = 40
+        self.player_width = 20
         self.player_height = 76
         self.player_gravity = 0
         self.is_jumping = False
@@ -62,6 +59,9 @@ class Game:
         self.animation_timer = 0
 
         self.bullets = []  # Bullets list
+
+        self.last_fired_time = 0  # Initialize the last fired time
+        self.fire_cooldown = 200  # 1 second cooldown (1000 milliseconds)
 
     def load_frames(self, sprite_sheet, start_index, count, width, height):
         frames = []
@@ -139,9 +139,11 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:  # Left mouse button
+                    if event.button == 1 and pygame.time.get_ticks() - self.last_fired_time > self.fire_cooldown:  # Left mouse button
+                        self.last_fired_time = pygame.time.get_ticks()
+
                         mouse_x, mouse_y = pygame.mouse.get_pos()
-                        bullet_speed = 18
+                        bullet_speed = 17
 
                         # Adjust mouse position to account for scaling and scrolling
                         adjusted_mouse_x = mouse_x / (self.screen_width / self.display.get_width()) + render_scroll[0]
@@ -219,24 +221,27 @@ class Game:
                 self.player_gravity = 0
                 self.is_jumping = False
 
+            # Draw enemies
+
             self.update_animation(keys)
 
-            # Draw everything
+            # Draw background
             self.display.fill((0, 0, 0))
             self.display.blit(background, (-render_scroll[0], -render_scroll[1]))
 
+
+            # Enemy spawning, and collision checking
+            self.enemy_manager.spawn_enemy()
+            self.enemy_manager.update_draw_enemies(render_scroll, player)
+            self.enemy_manager.check_bullet_collision(self.bullets)
+            self.enemy_manager.check_player_collision(player)
+
+            # Draw player with different frames
             if self.current_frame_index < 0 or self.current_frame_index >= len(self.current_frames):
                 raise IndexError(f"Invalid frame index: {self.current_frame_index}. Available frames: {len(self.current_frames)}")
             else:
                  current_frame = self.current_frames[self.current_frame_index]
-            self.display.blit(current_frame, (self.player_x - render_scroll[0], self.player_y - render_scroll[1]))
-
-
-            # # Draw player with scroll offset
-            # pygame.draw.rect(
-            #     self.display, (255, 255, 255),
-            #     player.move(-render_scroll[0], -render_scroll[1])
-            # )
+            self.display.blit(current_frame, (self.player_x - 14 - render_scroll[0], self.player_y - render_scroll[1]))
 
             # Draw bullets and update their positions
             for bullet in self.bullets[:]:
@@ -246,7 +251,7 @@ class Game:
                     self.bullets.remove(bullet)
                 else:
                     pygame.draw.circle(
-                        self.display, (255, 165, 20),
+                        self.display, (0, 255, 0),
                         (int(bullet[0] - render_scroll[0]), int(bullet[1] - render_scroll[1])), 5
                     )
 
@@ -260,7 +265,6 @@ class Game:
             # Update and display score and timer
             scoring.update_timer()
             scoring.display_timer_and_score(self.screen, self.font)
-
 
             pygame.display.flip()  # Update the display
             self.clock.tick(60)
