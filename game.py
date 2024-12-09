@@ -252,7 +252,7 @@ class Game:
                 else:
                     pygame.draw.circle(
                         self.display, (0, 255, 0),
-                        (int(bullet[0] - render_scroll[0]), int(bullet[1] - render_scroll[1])), 5
+                        (int(bullet[0] - render_scroll[0]), int(bullet[1] - render_scroll[1])),
                     )
 
             # Render platforms

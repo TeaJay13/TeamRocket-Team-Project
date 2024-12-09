@@ -9,6 +9,13 @@ class EnemyManager:
     def __init__(self, screen):
         self.screen = screen
 
+        self.blue_square_image = pygame.image.load("graphics/enemy_o1.PNG").convert_alpha()
+        self.red_square_image = pygame.image.load("graphics/enemy_o2.PNG").convert_alpha()
+
+        self.blue_square_image = pygame.transform.scale(self.blue_square_image, (80, 80))
+        self.red_square_image = pygame.transform.scale(self.red_square_image, (80, 80))  # Resize to fit your game
+
+
         # var to compare tick clock to next time an enemy spawns
         self.next_spawn_time = 0
 
@@ -42,12 +49,12 @@ class EnemyManager:
                 if square.x > player.x:
                     square.x = square.x - 1.4
                 elif square.x < player.x:
-                    square.x = square.x + 1.
+                    square.x = square.x + 1.4
 
                 if square.y > player.y:
-                    square.y = square.y - 1.5
+                    square.y = square.y - 1.4
                 elif square.y < player.y:
-                    square.y = square.y + 1.5
+                    square.y = square.y + 1.4
             elif isinstance(square, RedSquare):
                 if square.x > player.x:
                     square.x = square.x - 1
@@ -61,24 +68,17 @@ class EnemyManager:
 
             # Draw the blue square at the adjusted position
             if isinstance(square, BlueSquare):
-                pygame.draw.rect(
-                    self.screen,  # Surface to draw on
-                    (0, 0, 255),  # Blue color (R, G, B)
-                    pygame.Rect(screen_x - 15, screen_y - 15, 30, 30)  # Position and size of the square
-                )
+                self.screen.blit(self.blue_square_image, (screen_x - 10, screen_y - 20))
             else:
-                pygame.draw.rect(
-                    self.screen,  # Surface to draw on
-                    (255, 0, 0),  # Blue color (R, G, B)
-                    pygame.Rect(screen_x - 15, screen_y - 15, 30, 30)  # Position and size of the square
-                )
+                self.screen.blit(self.red_square_image, (screen_x - 10, screen_y - 20))
+
 
     def check_bullet_collision(self, bullets):
         # Check collision with squares
         for bullet in bullets[:]:  # Loop through all bullets
             bullet_rect = pygame.Rect(bullet[0], bullet[1], 5, 5)  # Create the bullet's rectangle
             for square in squares[:]:
-                square_rect = pygame.Rect(square.x - 10, square.y - 10, 20, 20)  # Create the square's rectangle
+                square_rect = pygame.Rect(square.x - 10, square.y - 10, 80, 80)  # Create the square's rectangle
                 
                 if bullet_rect.colliderect(square_rect):  # Check for collision
                     bullets.remove(bullet)  # Remove the bullet
