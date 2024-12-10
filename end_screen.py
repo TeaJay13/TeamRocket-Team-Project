@@ -3,19 +3,14 @@ import sys
 import sqlite3
 from scoring import get_final_score
 
-
 # Initialize Pygame
 pygame.init()
 
 # Constants for screen size and colors
 WIDTH, HEIGHT = 800, 600
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-BLUE = (0, 0, 255)
-GREEN = (0, 200, 0)
-BRIGHT_GREEN = (0, 255, 0)
-RED = (200, 0, 0)
-BRIGHT_RED = (255, 0, 0)
+WHITE, BLACK = (255, 255, 255), (0, 0, 0)
+BLUE, GREEN, BRIGHT_GREEN = (0, 0, 255), (0, 200, 0), (0, 255, 0)
+RED, BRIGHT_RED = (200, 0, 0), (255, 0, 0)
 
 # Set up display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -30,7 +25,7 @@ DB_PATH = "game_scores.db"
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 
-# Ensure the scores table exists (does not recreate it unnecessarily)
+# Ensure the scores table exists
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS scores (
         name TEXT,
@@ -56,8 +51,13 @@ def draw_button(msg, x, y, w, h, inactive_color, active_color, action=None):
 
 # Actions for buttons
 def play_again():
+    # Possible change: Instead of sys.exit(), return a restart signal to the game loop
+    # global restart_game
+    # restart_game = True
+    # pygame.quit()
+    # sys.exit()  # Exit the end screen (to be replaced with a restart signal)
     restartGame = True
-    sys.exit()  # Exit the end screen to allow the game to restart
+    sys.exit()
 
 def quit_game():
     print("Exiting the game...")
@@ -105,10 +105,8 @@ def input_name_screen(score):
         screen.blit(prompt_surface, ((WIDTH - prompt_surface.get_width()) // 2, 150))
 
         # Draw input box
-        input_box_x = (WIDTH - 400) // 2
-        input_box_y = 250
-        input_box_width = 400
-        input_box_height = 50
+        input_box_x, input_box_y = (WIDTH - 400) // 2, 250
+        input_box_width, input_box_height = 400, 50
         pygame.draw.rect(screen, BLACK, (input_box_x, input_box_y, input_box_width, input_box_height), 2)
 
         # Display entered name inside the input box
@@ -118,16 +116,15 @@ def input_name_screen(score):
         # Draw cursor
         if cursor_visible:
             cursor_x = input_box_x + 10 + name_surface.get_width() + 5
-            cursor_y = input_box_y + 10
-            cursor_height = input_box_height - 20
+            cursor_y, cursor_height = input_box_y + 10, input_box_height - 20
             pygame.draw.line(screen, BLACK, (cursor_x, cursor_y), (cursor_x, cursor_y + cursor_height), 2)
 
         pygame.display.flip()
         clock.tick(60)
 
-# Display top 10 scores
+# Display top 6 scores
 def display_top_scores():
-    cursor.execute("SELECT name, score FROM scores ORDER BY score DESC LIMIT 10")
+    cursor.execute("SELECT name, score FROM scores ORDER BY score DESC LIMIT 6")
     scores = cursor.fetchall()
 
     y_offset = 200
@@ -163,6 +160,12 @@ def end_screen(final_score):
         draw_button("Quit", 225, 520, 350, 50, RED, BRIGHT_RED, quit_game)
 
         pygame.display.flip()
+
+        # Possible Change:
+        # global restart_game
+        # restart_game = False  # Reset restart flag
+        # if restart_game:
+        #     return True  # Allow restart to be handled by caller
 
 # Run the name input screen if this file is executed directly
 if __name__ == "__main__":
