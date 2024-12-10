@@ -98,7 +98,8 @@ class EnemyManager:
             square_rect = pygame.Rect(square.x, square.y, 20, 20)
             if square_rect.colliderect(player_rect):
                 print("HIT")
-                sys.exit()
+                return True # Return True if player is hit
+        return False # Return False if player is not hit
 
 # Enemy List Initialization
 squares = []

@@ -4,6 +4,7 @@ import Start_home
 import math
 import scoring
 import database
+import end_screen
 from enemy_manager import EnemyManager
 from tilemap import Tilemap
     
@@ -234,7 +235,18 @@ class Game:
             self.enemy_manager.spawn_enemy()
             self.enemy_manager.update_draw_enemies(render_scroll, player)
             self.enemy_manager.check_bullet_collision(self.bullets)
-            self.enemy_manager.check_player_collision(player)
+            
+            # Check if player is Hit
+            player_hit = self.enemy_manager.check_player_collision(player)
+            if player_hit: 
+                print("Player hit! Ending game...")
+                running = False  # Stop the main game loop
+                player_hit = False
+                final_score = scoring.get_final_score()
+                end_screen.input_name_screen(final_score)
+                end_screen.end_screen(final_score)
+               
+
 
             # Draw player with different frames
             if self.current_frame_index < 0 or self.current_frame_index >= len(self.current_frames):
