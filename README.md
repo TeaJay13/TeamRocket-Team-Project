@@ -10,11 +10,11 @@
 
 # Overview
 
-The goal of this project is to create a game using the pygame module in python. The program uses several classes that integrate with the main game.py file to run the different parts of the game. The game stores user and game data to a database. The game uses inputs from the player to move around a 2d environment with dynamic enemies and obstacles. The player is able to move, jump, and use a weapon. The game contains a start and end screen to indicate what the player needs to do to start the game, and when they lose they are able to either restart the game or quit.
+The goal of this project is to create a game using the pygame module in python. The program uses several classes that integrate with the main game.py file to run the different parts of the game. The game stores user and game data to a database. The game uses inputs from the player to move around a 2d environment with dynamic enemies and obstacles. The player is able to move, jump, and use a weapon. The game contains a start and end screen to indicate what the player needs to do to start the game or end the game, and when they lose they are shown the top 5 scores and then the player can quit.
 
 ## How to Play
 
-When the game is launched the player is given the options between 2 maps, and a quit button if they choose to do so. Upon picking a map there player character will be spawned in the 2d arena environment. This is where the game loop starts. The player must move around and fire their weapon to defeat enemies with ranging health, the enemies are always following the player. The game ends when an enemy reaches the player. Upon death the player's score is saved to a database.
+When the game is launched the player is given the options between 2 maps, and a quit button if they choose to do so. Upon picking a map there player character will be spawned in the 2d arena environment. This is where the game loop starts. The player must move around and fire their weapon to defeat enemies with ranging health, the enemies are always following the player. The game ends when an enemy reaches the player. Upon death the player's score is saved to a database, and the top 5 scores are shown. After a minute of playtime the bullet firing cooldown is reduced to 0 allowing the player to fire at will at the endless onslaught of bugs.
 
 ### Controls:
 
@@ -34,6 +34,7 @@ Here is a list of the libraries used in python:
 * sys
 * math
 * random
+* sqlite3
 
 # Collaborators
 
@@ -52,4 +53,4 @@ Here is a list of the libraries used in python:
 
 * Add more enemies/powerups/weapons
 * Create more maps/randomize obstacles
-* Add music. Add more graphics
+* Add music/sounds. Add more graphics

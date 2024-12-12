@@ -8,7 +8,7 @@ import time
 pygame.init()
 
 # Constants for screen size and colors
-SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 700
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (200, 0, 0)
@@ -102,15 +102,15 @@ def start_page():
                 quit_game()
 
         # Title
-        render_text("Welcome to the Game", font_large, BLACK, (150, 100))
+        render_text("Welcome to the Game", font_large, BLACK, (225, 100))
 
         # Draw buttons for background choices
-        draw_button("Prairie", 300, 250, 200, 50, GREEN, BRIGHT_GREEN, lambda: choose_background(0))
-        draw_button("Swamp", 300, 350, 200, 50, BLUE, BRIGHT_BLUE, lambda: choose_background(1))
+        draw_button("Waterfall", 375, 250, 200, 50, GREEN, BRIGHT_GREEN, lambda: choose_background(0))
+        draw_button("Swamp", 375, 350, 200, 50, BLUE, BRIGHT_BLUE, lambda: choose_background(1))
 
 
         # draw_button("Start", 300, 250, 200, 50, GREEN, BRIGHT_GREEN, background_selection_page)
-        draw_button("Quit", 300, 450, 200, 50, RED, BRIGHT_RED, quit_game)
+        draw_button("Quit", 375, 450, 200, 50, RED, BRIGHT_RED, quit_game)
 
 
 

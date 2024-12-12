@@ -14,7 +14,6 @@ def start_timer():
     start_time = time.time()
     current_time = 0
     total_score = 0
-    print("Timer started.")
 
 # Update the timer and calculate score (call this in the game loop)
 def update_timer():
