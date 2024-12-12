@@ -37,7 +37,7 @@ class Game:
         self.enemy_manager = EnemyManager(self.display)
         self.end_screen_instance = EndScreen()
 
-        # Player properties
+        # Player propertiesa
         self.player_x = 425
         self.player_y = 150
         self.player_width = 20
@@ -134,7 +134,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1 and pygame.time.get_ticks() - self.last_fired_time > self.fire_cooldown:  # Left mouse button
+                    if event.button == 1 and (pygame.time.get_ticks() - self.last_fired_time > self.fire_cooldown) or pygame.time.get_ticks() > 60000:  # Left mouse button
                         self.last_fired_time = pygame.time.get_ticks()
 
                         mouse_x, mouse_y = pygame.mouse.get_pos()

@@ -36,7 +36,14 @@ class EnemyManager:
             else:
                 square = RedSquare(random.randint(0, WIDTH), -20, 2)
                 squares.append(square)
-            self.next_spawn_time = current_time + 1000
+            if current_time > 60000:
+                self.next_spawn_time = current_time + 300
+            elif current_time > 30000:
+                self.next_spawn_time = current_time + 600
+            elif current_time > 10000:
+                self.next_spawn_time = current_time + 900
+            else:
+                self.next_spawn_time = current_time + 1200
 
     # Function for drawing enemies as blue squares
     def update_draw_enemies(self, render_scroll, player):
