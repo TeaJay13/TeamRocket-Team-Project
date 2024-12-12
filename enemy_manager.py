@@ -88,7 +88,7 @@ class EnemyManager:
                     break  # Exit loop once the bullet hits a square
 
     def check_player_collision(self, player):
-        player_width = 60
+        player_width = 10
         player_height = 76
 
         # Define the hitbox as the entire rectangle of the player
@@ -97,7 +97,6 @@ class EnemyManager:
             # Assuming square has x, y, width, and height attributes
             square_rect = pygame.Rect(square.x, square.y, 20, 20)
             if square_rect.colliderect(player_rect):
-                print("HIT")
                 return True # Return True if player is hit
         return False # Return False if player is not hit
 
@@ -117,43 +116,3 @@ class RedSquare:
         self.x = x
         self.y = y
         self.hit_count = 2  # Set hit count for squares to 2
-
-
-# # Handle spawning of triangles, squares, and hexagons
-# # Spawn triangles every 3 seconds, starting immediately
-# if current_time - last_triangle_spawn_time >= spawn_interval:
-#     last_triangle_spawn_time = current_time  # Update the last spawn time for triangles
-#     for _ in range(spawn_count):  # Spawn spawn_count number of triangles
-#         side = random.choice(["left", "right"])
-#         y = get_valid_y()  # Ensure valid y-coordinate for spawn
-#         if side == "left":
-#             triangles.append([0, y, triangle_speed, 0])
-#         else:
-#             triangles.append([WIDTH, y, -triangle_speed, 0])
-
-# # Spawn squares after 20 seconds, every 3 seconds
-# if elapsed_time >= 20000 and current_time - last_square_spawn_time >= spawn_interval:
-#     last_square_spawn_time = current_time  # Update the last spawn time for squares
-#     for _ in range(spawn_count):  # Spawn spawn_count number of squares
-#         side = random.choice(["left", "right"])
-#         y = get_valid_y()
-#         if side == "left":
-#             squares.append(Square(0, y, square_speed))  # Create a Square object and append it
-#         else:
-#             squares.append(Square(WIDTH, y, -square_speed))  # Create a Square object and append it
-
-# # Spawn hexagons after 40 seconds, every 3 seconds
-# if elapsed_time >= 40000 and current_time - last_hexagon_spawn_time >= spawn_interval:
-#     last_hexagon_spawn_time = current_time  # Update the last spawn time for hexagons
-#     for _ in range(spawn_count):  # Spawn spawn_count number of hexagons
-#         side = random.choice(["left", "right"])
-#         y = get_valid_y()
-#         # Append a new Hexagon object to the hexagons list
-#         if side == "left":
-#             hexagons.append(Hexagon(0, y, hexagon_speed, 5))  # Hexagon with 5 hits to destroy
-#         else:
-#             hexagons.append(Hexagon(WIDTH, y, -hexagon_speed, 5))  # Hexagon with 5 hits to destroy
-
-# # Gradually increase spawn count every 10 seconds (after 10, 20, 30, etc. seconds)
-# if elapsed_time % 10000 == 0 and spawn_count < 10:  # Max spawn count cap (e.g., 10 pieces max)
-#     spawn_count += 1

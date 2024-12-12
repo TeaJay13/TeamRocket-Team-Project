@@ -4,7 +4,7 @@ import Start_home
 import math
 import scoring
 import database
-import end_screen
+from end_screen import EndScreen
 from enemy_manager import EnemyManager
 from tilemap import Tilemap
     
@@ -32,11 +32,10 @@ class Game:
         # Scroll offset for the camera
         self.scroll = [0, 0]
 
-        # Tilemap instance
+        # Class instances
         self.tilemap = Tilemap(self.scroll, self.display)
-
-        # enemy manager instance
         self.enemy_manager = EnemyManager(self.display)
+        self.end_screen_instance = EndScreen()
 
         # Player properties
         self.player_x = 425
@@ -59,18 +58,16 @@ class Game:
         self.current_frame_index = 0
         self.animation_timer = 0
 
-        self.bullets = []  # Bullets list
-
-        self.last_fired_time = 0  # Initialize the last fired time
-        self.fire_cooldown = 200  # 1 second cooldown (1000 milliseconds)
+        self.bullets = []
+        self.last_fired_time = 0
+        self.fire_cooldown = 200
 
     def load_frames(self, sprite_sheet, start_index, count, width, height):
         frames = []
         for i in range(start_index, start_index + count):
-            x = i * width  # Горизонтальная позиция кадра
-            y = 0  # Так как все кадры находятся в одной строке, вертикальная позиция всегда 0
+            x = i * width
+            y = 0
 
-            # Проверяем, не выходит ли кадр за пределы изображения
             if x + width > sprite_sheet.get_width() or y + height > sprite_sheet.get_height():
                 raise ValueError(f"Frame {i} out of bounds: x={x}, y={y}, width={width}, height={height}, "
                                  f"sheet_width={sprite_sheet.get_width()}, sheet_height={sprite_sheet.get_height()}")
@@ -99,16 +96,14 @@ class Game:
             self.current_frame_index = (self.current_frame_index + 1) % len(self.current_frames)
 
 
-        
-
     def game_loop(self):
-        # Start the timer and initialize the database**
+        # Start the timer and initialize the database
         scoring.start_timer()
         database.initialize_db()
 
         # Load initial background
         global background_state, game_active, background_chosen
-        background_forest = pygame.image.load("graphics/BG1.svg") #draw a bottom on those and rename them
+        background_forest = pygame.image.load("graphics/BG1.svg")
         background_swamp = pygame.image.load("graphics/BG2.svg")
 
         background1_scaled = pygame.transform.scale(background_forest, (self.screen_width, self.screen_height))
@@ -119,14 +114,13 @@ class Game:
         if Start_home.background_state == 1:
             background = background2_scaled
 
-
         running = True
         while running:
             # Calculate the scroll offset to center player
             center_x = self.display.get_width() / 2
             center_y = self.display.get_height() / 2
 
-            self.scroll[0] += (self.player_x - center_x - self.scroll[0])  / 10
+            self.scroll[0] += (self.player_x - center_x - self.scroll[0]) / 10
             self.scroll[1] += (self.player_y - center_y - self.scroll[1]) / 10
 
             # Constrain scroll to the world boundaries
@@ -151,23 +145,18 @@ class Game:
                         adjusted_mouse_y = mouse_y / (self.screen_height / self.display.get_height()) + render_scroll[1]
 
                         # Calculate the direction of the bullet
-                        angle = math.atan2(
-                            adjusted_mouse_y - self.player_y,
-                            adjusted_mouse_x - self.player_x
-                        )
+                        angle = math.atan2(adjusted_mouse_y - self.player_y, adjusted_mouse_x - self.player_x)
                         dx = math.cos(angle) * bullet_speed
                         dy = math.sin(angle) * bullet_speed
 
                         # Add the bullet to self.bullets
                         self.bullets.append([self.player_x, self.player_y, dx, dy])
 
-
             keys = pygame.key.get_pressed()
 
             # Player movement
             if keys[pygame.K_a]:
                 self.player_x -= 5
-
             if keys[pygame.K_d]:
                 self.player_x += 5
 
@@ -189,7 +178,6 @@ class Game:
             elif self.player_x > 960:
                 self.player_x = 960
 
-
             # Platform collision (grass and white platforms)
             for platform in self.tilemap.grass_platforms:
                 if player.colliderect(platform) and self.player_gravity > 0:
@@ -209,7 +197,6 @@ class Game:
                         self.player_y = platform.bottom
                         self.player_gravity = 0
 
-
             # Ground collision
             if player.colliderect(self.ground) and self.player_gravity > 0:
                 self.player_y = self.ground.top - self.player_height
@@ -223,36 +210,32 @@ class Game:
                 self.is_jumping = False
 
             # Draw enemies
-
             self.update_animation(keys)
 
             # Draw background
             self.display.fill((0, 0, 0))
             self.display.blit(background, (-render_scroll[0], -render_scroll[1]))
 
-
             # Enemy spawning, and collision checking
             self.enemy_manager.spawn_enemy()
             self.enemy_manager.update_draw_enemies(render_scroll, player)
             self.enemy_manager.check_bullet_collision(self.bullets)
-            
+
             # Check if player is Hit
             player_hit = self.enemy_manager.check_player_collision(player)
-            if player_hit: 
-                print("Player hit! Ending game...")
+            if player_hit:
                 running = False  # Stop the main game loop
                 player_hit = False
                 final_score = scoring.get_final_score()
-                end_screen.input_name_screen(final_score)
-                end_screen.end_screen(final_score)
-               
-
+                restart_game = self.end_screen_instance.end_screen(final_score)
+                if restart_game:     
+                    self.game_loop()
 
             # Draw player with different frames
             if self.current_frame_index < 0 or self.current_frame_index >= len(self.current_frames):
                 raise IndexError(f"Invalid frame index: {self.current_frame_index}. Available frames: {len(self.current_frames)}")
             else:
-                 current_frame = self.current_frames[self.current_frame_index]
+                current_frame = self.current_frames[self.current_frame_index]
             self.display.blit(current_frame, (self.player_x - 14 - render_scroll[0], self.player_y - render_scroll[1]))
 
             # Draw bullets and update their positions
@@ -262,18 +245,12 @@ class Game:
                 if bullet[0] < 0 or bullet[0] > self.world_width or bullet[1] < 0 or bullet[1] > self.world_height:
                     self.bullets.remove(bullet)
                 else:
-                    pygame.draw.circle(
-                        self.display, (0, 255, 0),
-                        (int(bullet[0] - render_scroll[0]), int(bullet[1] - render_scroll[1])),
-                        radius=5
-                    )
+                    pygame.draw.circle(self.display, (0, 255, 0), (int(bullet[0] - render_scroll[0]), int(bullet[1] - render_scroll[1])), radius=5)
 
             # Render platforms
             self.tilemap.render()
 
-            self.screen.blit(
-                pygame.transform.scale(self.display, (self.screen_width, self.screen_height)), (0, 0)
-            )
+            self.screen.blit(pygame.transform.scale(self.display, (self.screen_width, self.screen_height)), (0, 0))
 
             # Update and display score and timer
             scoring.update_timer()
@@ -284,6 +261,7 @@ class Game:
 
         pygame.quit()
         sys.exit()
+
 
 
 # Run the start page and then the game
